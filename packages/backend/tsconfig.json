@@ -1,12 +1,30 @@
 {
   "compilerOptions": {
-    // Environment setup & latest features
+    // 1. Environment & Target (Matches Roadmap "ES2022 target" )
     "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
+    "target": "ES2022",
+    "module": "CommonJS", 
+    "moduleResolution": "Node", 
+    "esModuleInterop": true,
+    
+    // 2. Clean Imports Configuration (Required by Roadmap )
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    // 3. Output Settings
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    // 4. Strictness (Matches Roadmap "Strict mode enabled" )
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    // Optional: useful for backend debugging
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
 
     // Bundler mode
     "moduleResolution": "bundler",
@@ -25,5 +43,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
 }
+
