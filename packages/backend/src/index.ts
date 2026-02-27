@@ -18,10 +18,11 @@ app.get("/health", (req, res) => {
 // Import the routes
 import authRoutes from "./routes/auth.routes";
 import organizationRoutes from "./routes/organization.routes";
-
+import invitationRoutes from "./routes/invitation.routes";
 // Use the routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
+app.use("/api/v1/invitations", invitationRoutes);
 
 app.use(errorHandler);
 

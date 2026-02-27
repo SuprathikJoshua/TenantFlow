@@ -55,3 +55,33 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   console.log("Resend response:", data);
   console.log("Resend error:", error);
 };
+
+/**
+ * Send Invitation Email
+ * @param email
+ * @param token
+ * @param orgName
+ */
+export const sendInvitationEmail = async (
+  email: string,
+  token: string,
+  orgName: string,
+) => {
+  const inviteUrl = `${process.env.APP_URL}/invitations?token=${token}`;
+
+  await resend.emails.send({
+    from: "TenantFlow <onboarding@resend.dev>",
+    to:
+      process.env.NODE_ENV === "production"
+        ? email
+        : "iiitlcollegeworkspace@gmail.com",
+    subject: `You've been invited to join ${orgName}`,
+    html: `
+      <h1>You've been invited!</h1>
+      <p>You have been invited to join <strong>${orgName}</strong> on TenantFlow.</p>
+      <a href="${inviteUrl}">Accept Invitation</a>
+      <p>This link expires in 7 days.</p>
+      <p>If you didn't expect this, ignore this email.</p>
+    `,
+  });
+};
