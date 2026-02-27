@@ -1,12 +1,34 @@
 import {
   acceptInvitationService,
   cancelInvitationService,
+  getAllInvitationsService,
   sendingInvitationService,
 } from "@/services/invitation.service";
 import ApiError from "@/utils/ApiError";
 import ApiResponse from "@/utils/ApiResponse";
 import asyncHandler from "@/utils/asyncHandler";
 import { Request, Response } from "express";
+
+/**
+ * Get all invitations for an organization
+ */
+export const getInvitations = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { orgId } = req.params;
+    const invitations = await getAllInvitationsService(orgId as string);
+    // console.log(invitations);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          invitations,
+          "Invitations retrieved successfully.",
+        ),
+      );
+  },
+);
 
 /**
  * Create Invitation record and send email

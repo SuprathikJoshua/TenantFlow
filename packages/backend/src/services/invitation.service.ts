@@ -3,6 +3,21 @@ import ApiError from "@/utils/ApiError";
 import crypto from "crypto";
 import { sendInvitationEmail } from "./email.service";
 import { Role } from "@/generated/prisma/enums";
+import { log } from "console";
+
+/**
+ * Get all invitations for an organization Service
+ * @param orgId
+ */
+export const getAllInvitationsService = async (orgId: string) => {
+  const invitations = await prisma.invitation.findMany({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: "desc" },
+  });
+  // console.log(invitations);
+
+  return invitations;
+};
 
 /**
  * Create Invitation record and send email Service
@@ -64,7 +79,7 @@ export const acceptInvitationService = async (
   token: string,
   userId: string,
 ) => {
-  const invitation = await prisma.invitation.findUnique({
+  const invitation = await prisma.invitation.findFirst({
     where: { token },
   });
 
@@ -77,15 +92,15 @@ export const acceptInvitationService = async (
   if (invitation.expiresAt < new Date()) {
     throw new ApiError(400, "Invitation has expired.");
   }
-  await prisma.$transaction(async () => {
-    await prisma.organizationMember.create({
+  await prisma.$transaction(async (tx) => {
+    await tx.organizationMember.create({
       data: {
         userId,
         organizationId: invitation.organizationId,
         role: invitation.role,
       },
     });
-    await prisma.invitation.update({
+    await tx.invitation.update({
       where: { id: invitation.id },
       data: { status: "ACCEPTED" },
     });
