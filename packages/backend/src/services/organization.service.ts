@@ -14,11 +14,17 @@ export const createOrgService = async ({
   const baseSlug = name.toLowerCase().trim().replace(/\s+/g, "-");
   const slug = `${baseSlug}-${crypto.randomBytes(4).toString("hex")}`;
 
-  const org = await prisma.organization.create({
-    data: { name, ownerId: userId, subscriptionTier, slug },
+  const result = await prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: { name, ownerId: userId, subscriptionTier, slug },
+    });
+    await tx.organizationMember.create({
+      data: { organizationId: org.id, userId, role: "OWNER" },
+    });
+    return org;
   });
 
-  return { org };
+  return { org: result };
 };
 
 /**
