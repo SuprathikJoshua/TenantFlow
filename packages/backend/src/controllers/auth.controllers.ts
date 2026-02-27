@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 import ApiError from "@/utils/ApiError";
 import ApiResponse from "@/utils/ApiResponse";
 import asyncHandler from "@/utils/asyncHandler";
-import { loginUserService, registerUserService } from "@/services/auth.service";
+import {
+  loginUserService,
+  registerUserService,
+  verifyEmailService,
+} from "@/services/auth.service";
 import { setAuthCookies } from "@/utils/cookie";
 
 /**
@@ -25,7 +29,13 @@ export const registerUser = asyncHandler(
     setAuthCookies(res, accessToken, refreshToken);
     res
       .status(201)
-      .json(new ApiResponse(201, user, "User created successfully"));
+      .json(
+        new ApiResponse(
+          201,
+          user,
+          "Registration successfull! Please verify your email.",
+        ),
+      );
   },
 );
 
@@ -42,4 +52,18 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   setAuthCookies(res, accessToken, refreshToken);
   res.status(200).json(new ApiResponse(200, "User login successfully"));
+});
+
+/**
+ *Verify Email
+ */
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.query;
+  if (!token) {
+    throw new ApiError(400, "Token is required");
+  }
+  const message = await verifyEmailService(token as string);
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Email verified successfully"));
 });
