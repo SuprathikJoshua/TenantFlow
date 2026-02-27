@@ -3,8 +3,10 @@ import ApiError from "@/utils/ApiError";
 import ApiResponse from "@/utils/ApiResponse";
 import asyncHandler from "@/utils/asyncHandler";
 import {
+  forgotPasswordService,
   loginUserService,
   registerUserService,
+  resetPasswordService,
   verifyEmailService,
 } from "@/services/auth.service";
 import { setAuthCookies } from "@/utils/cookie";
@@ -67,3 +69,34 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, null, "Email verified successfully"));
 });
+/**
+ * Forgot Password
+ */
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+    await forgotPasswordService(email);
+    res
+      .status(200)
+      .json(new ApiResponse(200, null, "Password reset email sent"));
+  },
+);
+/**
+ * Reset Password
+ */
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { token } = req.query;
+    const { newPassword } = req.body;
+    if (!token || !newPassword) {
+      throw new ApiError(400, "All fields are required");
+    }
+    await resetPasswordService(token as string, newPassword);
+    res
+      .status(200)
+      .json(new ApiResponse(200, null, "Password reset successful"));
+  },
+);

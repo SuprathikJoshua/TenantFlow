@@ -34,7 +34,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
  * @param token
  */
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetUrl = `${process.env.APP_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.APP_URL}/auth/reset-password?token=${token}`;
 
   const { data, error } = await resend.emails.send({
     from: "TenantFlow <onboarding@resend.dev>",

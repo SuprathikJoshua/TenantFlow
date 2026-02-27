@@ -7,7 +7,7 @@ import {
   hashPassword,
 } from "@/utils/auth.utils";
 import crypto from "crypto";
-import { sendVerificationEmail } from "./email.service";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./email.service";
 /**
  * Register User Service
  */
@@ -71,25 +71,14 @@ export const loginUserService = async (email: string, password: string) => {
 /**
  *Verify Email
  */
-
 export const verifyEmailService = async (token: string) => {
-  // const user = await prisma.user.findFirst({
-  //   where: {
-  //     verificationToken: token,
-  //     verificationTokenExpires: { gt: new Date() },
-  //   },
-  // });
-  const user = await prisma.user
-    .findFirst({
-      where: {
-        verificationToken: token,
-        verificationTokenExpires: { gt: new Date() },
-      },
-    })
-    .catch((e) => {
-      console.error("FULL ERROR:", JSON.stringify(e, null, 2));
-      throw e;
-    });
+  const user = await prisma.user.findFirst({
+    where: {
+      verificationToken: token,
+      verificationTokenExpires: { gt: new Date() },
+    },
+  });
+
   if (!user) {
     throw new ApiError(400, "Invalid or expired token");
   }
@@ -104,4 +93,54 @@ export const verifyEmailService = async (token: string) => {
   });
 
   return { message: "Email verification successfull" };
+};
+
+/**
+ * Forgot Password Service
+ */
+export const forgotPasswordService = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    return;
+  }
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1hr
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetToken,
+      resetTokenExpires,
+    },
+  });
+
+  await sendPasswordResetEmail(email, resetToken);
+};
+
+/**
+ * Reset Password Service
+ */
+export const resetPasswordService = async (
+  token: string,
+  newPassword: string,
+) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpires: { gt: new Date() },
+    },
+  });
+  if (!user) {
+    throw new ApiError(400, "Invalid or expired token");
+  }
+  const passHash = await hashPassword(newPassword);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash: passHash,
+      resetToken: null,
+      resetTokenExpires: null,
+    },
+  });
 };
