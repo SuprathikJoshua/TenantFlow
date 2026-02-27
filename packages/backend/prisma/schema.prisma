@@ -13,6 +13,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum SubscriptionTier{
+  FREE
+  PRO
+  ENTERPRISE
+}
+
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
@@ -33,10 +39,11 @@ model Organization {
   name               String
   slug               String   @unique
   ownerId            String
-  subscriptionTier   String   @default("FREE")
+  subscriptionTier   SubscriptionTier   @default(FREE)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   members            OrganizationMember[]
+  invitations        Invitation[]
 }
 model OrganizationMember {
   id             String   @id @default(cuid())
@@ -47,4 +54,16 @@ model OrganizationMember {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([organizationId, userId])
+}
+model Invitation {
+  id             String       @id @default(cuid())
+  organizationId String
+  email          String
+  role           String
+  token          String       @unique
+  expiresAt      DateTime
+  status         String       @default("PENDING")
+  invitedById    String
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }

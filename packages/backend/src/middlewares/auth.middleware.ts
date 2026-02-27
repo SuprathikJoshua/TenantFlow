@@ -22,7 +22,7 @@ export const verifyJWT = asyncHandler(
     if (!user)
       throw new ApiError(401, "Unauthorized request || User not found");
 
-    req.user = user;
+    req.userId = user.id;
     next();
   },
 );
