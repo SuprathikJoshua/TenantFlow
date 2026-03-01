@@ -92,6 +92,18 @@ export const acceptInvitationService = async (
   if (invitation.expiresAt < new Date()) {
     throw new ApiError(400, "Invitation has expired.");
   }
+  const existingMember = await prisma.organizationMember.findUnique({
+    where: {
+      organizationId_userId: {
+        organizationId: invitation.organizationId,
+        userId,
+      },
+    },
+  });
+  // console.log(existingMember);
+  if (existingMember) {
+    throw new ApiError(400, "You are already a member of this organization");
+  }
   await prisma.$transaction(async (tx) => {
     await tx.organizationMember.create({
       data: {
