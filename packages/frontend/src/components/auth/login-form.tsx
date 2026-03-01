@@ -6,16 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import apiClient from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate a login request
-    setTimeout(() => setIsLoading(false), 1500);
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      await apiClient.post("/auth/login", {
+        email: formData.get("email"),
+        password: formData.get("password"),
+      });
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      setError(error?.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -78,7 +95,7 @@ export function LoginForm() {
             </button>
           </div>
         </div>
-
+        {error && <p className="text-sm text-red-500">{error}</p>}
         <Button
           type="submit"
           disabled={isLoading}

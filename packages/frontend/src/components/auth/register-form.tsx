@@ -6,16 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import apiClient from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate a register request
-    setTimeout(() => setIsLoading(false), 1500);
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      await apiClient.post("/auth/register", {
+        name: formData.get("name"),
+        username: formData.get("username"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+      });
+
+      router.push("/login?registered=true");
+    } catch (error: any) {
+      setError(error?.response?.data?.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -98,7 +116,7 @@ export function RegisterForm() {
             Must be at least 8 characters with a number and symbol
           </p>
         </div>
-
+        {error && <p className="text-sm text-red-500">{error}</p>}
         <Button
           type="submit"
           disabled={isLoading}
