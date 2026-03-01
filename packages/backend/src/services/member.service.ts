@@ -109,6 +109,10 @@ export const updateMemberRoleService = async ({
     throw new ApiError(400, "You can't change your role!!");
   }
 
+  if (role !== "ADMIN" && role !== "MEMBER") {
+    throw new ApiError(400, "Invalid role specified!!");
+  }
+
   const member = await prisma.organizationMember.findUnique({
     where: { id: memberId },
   });
