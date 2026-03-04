@@ -145,6 +145,7 @@ export function MobileSidebar() {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="gap-3">
+                <Link href="/dashboard/create-org"></Link>
                 <Building2 className="size-4" />
                 Create Organization
               </DropdownMenuItem>
