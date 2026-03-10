@@ -1,3 +1,7 @@
+"use client";
+
+import { useOrgStore } from "@/store/org-store";
+import { useOrganizations, useOrgMembers } from "@/hooks/use-organization";
 import { StatCard } from "@/components/dashboard/stat-card";
 import {
   Card,
@@ -9,207 +13,119 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  Mail,
-  Crown,
-  ArrowUpRight,
-  UserPlus,
-  Shield,
-  Activity,
-} from "lucide-react";
-
-const recentMembers = [
-  {
-    name: "Sarah Chen",
-    email: "sarah@acmecorp.com",
-    role: "Admin",
-    initials: "SC",
-  },
-  {
-    name: "Alex Rivera",
-    email: "alex@acmecorp.com",
-    role: "Member",
-    initials: "AR",
-  },
-  {
-    name: "Jordan Lee",
-    email: "jordan@acmecorp.com",
-    role: "Member",
-    initials: "JL",
-  },
-  {
-    name: "Morgan Kim",
-    email: "morgan@acmecorp.com",
-    role: "Viewer",
-    initials: "MK",
-  },
-  {
-    name: "Taylor Brooks",
-    email: "taylor@acmecorp.com",
-    role: "Member",
-    initials: "TB",
-  },
-];
-
-const recentActivity = [
-  { action: "Sarah Chen joined the team", time: "2 hours ago", icon: UserPlus },
-  { action: "Billing plan upgraded to Pro", time: "5 hours ago", icon: Crown },
-  { action: "New role 'Editor' was created", time: "1 day ago", icon: Shield },
-  { action: "3 pending invitations sent", time: "2 days ago", icon: Mail },
-  {
-    action: "API key rotated successfully",
-    time: "3 days ago",
-    icon: Activity,
-  },
-];
-
-function getRoleBadgeVariant(role: string) {
-  switch (role) {
-    case "Admin":
-      return "default";
-    case "Member":
-      return "secondary";
-    case "Viewer":
-      return "outline";
-    default:
-      return "secondary";
-  }
-}
+import { Users, Mail, Crown, ArrowUpRight, Building2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export function DashboardOverview() {
+  const { currentOrgId, setCurrentOrgId } = useOrgStore();
+  const { data: orgs, isLoading: orgsLoading } = useOrganizations();
+  const { data: members, isLoading: membersLoading } = useOrgMembers(
+    currentOrgId || "",
+  );
+  useEffect(() => {
+    if (orgs && orgs.length > 0 && !currentOrgId) {
+      setCurrentOrgId(orgs[0].id);
+    }
+  }, [orgs, currentOrgId]);
+  if (orgsLoading) {
+    return <p className="text-muted-foreground">Loading...</p>;
+  }
+
+  if (!orgs || orgs.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full bg-primary/10">
+          <Building2 className="size-8 text-primary" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">
+          No organizations yet
+        </h1>
+        <p className="max-w-sm text-muted-foreground">
+          You don't belong to any organization yet. Create one to get started.
+        </p>
+        <Button asChild>
+          <Link href="/dashboard/create-organization">Create Organization</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome back, John
+          Welcome back!
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+        <p className="mt-1 text-sm text-muted-foreground">
           {"Here's what's happening with your organization today."}
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Members"
-          value="24"
+          value={membersLoading ? "..." : String(members?.length || 0)}
           description="Across all teams"
           icon={Users}
-          trend={{ value: "+3 this month", positive: true }}
         />
         <StatCard
-          title="Pending Invitations"
-          value="7"
-          description="Awaiting acceptance"
-          icon={Mail}
-          trend={{ value: "5 sent this week", positive: true }}
+          title="Organizations"
+          value={String(orgs.length)}
+          description="You belong to"
+          icon={Crown}
         />
         <StatCard
           title="Current Plan"
           value="Free"
-          description="5 of 10 seats used"
-          icon={Crown}
+          description="Upgrade for more features"
+          icon={Mail}
         />
       </div>
 
-      {/* Recent Members + Activity */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Members */}
+      {members && members.length > 0 && (
         <Card>
           <CardHeader>
-            <div>
-              <CardTitle className="text-base">Recent Members</CardTitle>
-              <CardDescription>
-                Latest people added to your organization
-              </CardDescription>
-            </div>
+            <CardTitle className="text-base">Recent Members</CardTitle>
+            <CardDescription>
+              Latest people in your organization
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
-              {recentMembers.map((member) => (
-                <div key={member.email} className="flex items-center gap-3">
+              {members.slice(0, 5).map((member: any) => (
+                <div key={member.id} className="flex items-center gap-3">
                   <Avatar className="size-9">
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                      {member.initials}
+                      {member.user.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 truncate">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {member.name}
+                      {member.user.name}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {member.email}
+                      {member.user.email}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      getRoleBadgeVariant(member.role) as
-                        | "default"
-                        | "secondary"
-                        | "outline"
-                    }
-                  >
-                    {member.role}
-                  </Badge>
+                  <Badge>{member.role}</Badge>
                 </div>
               ))}
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="mt-4 w-full text-muted-foreground hover:text-foreground"
+              className="mt-4 w-full text-muted-foreground"
               asChild
             >
-              <a href="/dashboard/team">
+              <Link href="/dashboard/team">
                 View all members
                 <ArrowUpRight className="size-3.5" />
-              </a>
+              </Link>
             </Button>
           </CardContent>
         </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle className="text-base">Recent Activity</CardTitle>
-              <CardDescription>
-                Latest actions in your organization
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              {recentActivity.map((item, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary">
-                    <item.icon
-                      className="size-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {item.action}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-4 w-full text-muted-foreground hover:text-foreground"
-            >
-              View all activity
-              <ArrowUpRight className="size-3.5" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 }
