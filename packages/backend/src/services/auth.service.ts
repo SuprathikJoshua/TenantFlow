@@ -144,3 +144,15 @@ export const resetPasswordService = async (
     },
   });
 };
+
+/**
+ * Get Current User Service
+ */
+export const getMeService = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    omit: { passwordHash: true },
+  });
+  if (!user) throw new ApiError(404, "User not found");
+  return user;
+};

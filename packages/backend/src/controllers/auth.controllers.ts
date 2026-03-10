@@ -4,6 +4,7 @@ import ApiResponse from "@/utils/ApiResponse";
 import asyncHandler from "@/utils/asyncHandler";
 import {
   forgotPasswordService,
+  getMeService,
   loginUserService,
   registerUserService,
   resetPasswordService,
@@ -100,3 +101,13 @@ export const resetPassword = asyncHandler(
       .json(new ApiResponse(200, null, "Password reset successful"));
   },
 );
+
+/**
+ * Get Me Controller
+ */
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+  const user = await getMeService(req.userId as string);
+  res
+    .status(200)
+    .json(new ApiResponse(200, { user }, "User fetched successfully"));
+});
