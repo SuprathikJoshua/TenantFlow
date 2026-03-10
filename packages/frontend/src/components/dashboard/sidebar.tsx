@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useOrgStore } from "@/store/org-store";
+import { useOrganizations } from "@/hooks/use-organization";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -23,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -31,16 +34,14 @@ const navItems = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-const orgs = [
-  { id: "1", name: "Acme Corp", initial: "A" },
-  { id: "2", name: "Globex Inc", initial: "G" },
-  { id: "3", name: "Initech", initial: "I" },
-];
-
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const [currentOrg, setCurrentOrg] = useState(orgs[0]);
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { currentOrgId, setCurrentOrgId } = useOrgStore();
+  const { data: orgs } = useOrganizations();
+  const currentOrg =
+    orgs?.find((org: any) => org.id === currentOrgId) || orgs?.[0];
 
   return (
     <aside
@@ -99,13 +100,13 @@ export function DashboardSidebar() {
               )}
             >
               <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-sm font-semibold text-primary">
-                {currentOrg.initial}
+                {currentOrg?.name[0].toUpperCase() || "?"}
               </div>
               {!collapsed && (
                 <>
                   <div className="flex-1 truncate">
                     <p className="truncate text-sm font-medium text-sidebar-foreground">
-                      {currentOrg.name}
+                      {currentOrg?.name || "No organization"}
                     </p>
                     <p className="text-xs text-muted-foreground">Free plan</p>
                   </div>
@@ -117,20 +118,23 @@ export function DashboardSidebar() {
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel>Switch Organization</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {orgs.map((org) => (
+            {orgs?.map((org: any) => (
               <DropdownMenuItem
                 key={org.id}
-                onClick={() => setCurrentOrg(org)}
+                onClick={() => setCurrentOrgId(org.id)}
                 className="gap-3"
               >
                 <div className="flex size-6 items-center justify-center rounded bg-primary/15 text-xs font-semibold text-primary">
-                  {org.initial}
+                  {org.name[0].toUpperCase()}
                 </div>
                 {org.name}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-3">
+            <DropdownMenuItem
+              className="gap-3"
+              onClick={() => router.push("/dashboard/create-organization")}
+            >
               <Building2 className="size-4" />
               Create Organization
             </DropdownMenuItem>
