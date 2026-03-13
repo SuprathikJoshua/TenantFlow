@@ -1,6 +1,10 @@
 "use client";
 
-import { useMembers } from "@/hooks/use-team";
+import {
+  useMembers,
+  useRemoveMember,
+  useUpdateMemberRole,
+} from "@/hooks/use-team";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +31,7 @@ import {
   UserMinus,
   Crown,
 } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 
 function getRoleBadgeClass(role: string) {
   switch (role) {
@@ -52,6 +57,12 @@ function getRoleIcon(role: string) {
 
 export function MembersTable() {
   const { data: members, isLoading } = useMembers();
+  const { mutate: removeMember } = useRemoveMember();
+  const { mutate: updateMemberRole } = useUpdateMemberRole();
+  const { data: user } = useUser();
+  const currentMember = members?.find((m: any) => m.user.id === user?.id);
+  const canManage =
+    currentMember?.role === "OWNER" || currentMember?.role === "ADMIN";
 
   if (isLoading) {
     return <p className="text-muted-foreground text-sm">Loading members...</p>;
@@ -120,7 +131,7 @@ export function MembersTable() {
                 {new Date(member.joinedAt).toLocaleDateString()}
               </TableCell>
               <TableCell className="text-right pr-4">
-                {member.role !== "OWNER" ? (
+                {member.role !== "OWNER" && canManage ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -135,18 +146,37 @@ export function MembersTable() {
                       <DropdownMenuLabel>Manage Member</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       {member.role === "ADMIN" ? (
-                        <DropdownMenuItem className="gap-3">
+                        <DropdownMenuItem
+                          className="gap-3"
+                          onClick={() =>
+                            updateMemberRole({
+                              memberId: member.id,
+                              role: "MEMBER",
+                            })
+                          }
+                        >
                           <UserCog className="size-4" />
                           Change to Member
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem className="gap-3">
+                        <DropdownMenuItem
+                          className="gap-3"
+                          onClick={() =>
+                            updateMemberRole({
+                              memberId: member.id,
+                              role: "ADMIN",
+                            })
+                          }
+                        >
                           <ShieldCheck className="size-4" />
                           Change to Admin
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="gap-3 text-destructive focus:text-destructive">
+                      <DropdownMenuItem
+                        className="gap-3 text-destructive focus:text-destructive"
+                        onClick={() => removeMember(member.id)}
+                      >
                         <UserMinus className="size-4" />
                         Remove from team
                       </DropdownMenuItem>
