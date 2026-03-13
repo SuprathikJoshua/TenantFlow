@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @param token
  */
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const verificationUrl = `${process.env.APP_URL}/auth/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${token}`;
 
   const { data, error } = await resend.emails.send({
     from: "TenantFlow <onboarding@resend.dev>",
@@ -33,7 +33,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
  * @param token
  */
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetUrl = `${process.env.APP_URL}/auth/reset-password?token=${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
 
   const { data, error } = await resend.emails.send({
     from: "TenantFlow <onboarding@resend.dev>",
