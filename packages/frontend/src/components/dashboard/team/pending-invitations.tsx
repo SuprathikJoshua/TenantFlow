@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useInvitations, useCancelInvitation } from "@/hooks/use-team";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,54 +13,26 @@ import {
 } from "@/components/ui/table";
 import { Mail, X, Clock } from "lucide-react";
 
-interface Invitation {
-  id: string;
-  email: string;
-  role: string;
-  sentDate: string;
-}
-
-const initialInvitations: Invitation[] = [
-  {
-    id: "inv-1",
-    email: "dev@newcompany.com",
-    role: "Member",
-    sentDate: "Feb 25, 2026",
-  },
-  {
-    id: "inv-2",
-    email: "designer@studio.io",
-    role: "Member",
-    sentDate: "Feb 26, 2026",
-  },
-  {
-    id: "inv-3",
-    email: "cto@startup.co",
-    role: "Admin",
-    sentDate: "Feb 28, 2026",
-  },
-];
-
 function getRoleBadgeClass(role: string) {
   switch (role) {
-    case "Admin":
+    case "ADMIN":
       return "bg-chart-4/15 text-chart-4 border-chart-4/20";
-    case "Member":
-      return "bg-secondary text-secondary-foreground border-border";
     default:
       return "bg-secondary text-secondary-foreground border-border";
   }
 }
 
 export function PendingInvitations() {
-  const [invitations, setInvitations] =
-    useState<Invitation[]>(initialInvitations);
+  const { data: invitations, isLoading } = useInvitations();
+  const { mutate: cancelInvitation } = useCancelInvitation();
 
-  function handleCancel(id: string) {
-    setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+  if (isLoading) {
+    return (
+      <p className="text-muted-foreground text-sm">Loading invitations...</p>
+    );
   }
 
-  if (invitations.length === 0) {
+  if (!invitations || invitations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12">
         <div className="flex size-12 items-center justify-center rounded-full bg-secondary">
@@ -94,7 +66,7 @@ export function PendingInvitations() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invitations.map((invitation) => (
+          {invitations.map((invitation: any) => (
             <TableRow key={invitation.id} className="border-border">
               <TableCell className="pl-4">
                 <div className="flex items-center gap-3">
@@ -127,7 +99,7 @@ export function PendingInvitations() {
               <TableCell className="hidden md:table-cell">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Clock className="size-3.5" />
-                  {invitation.sentDate}
+                  {new Date(invitation.createdAt).toLocaleDateString()}
                 </div>
               </TableCell>
               <TableCell className="text-right pr-4">
@@ -135,7 +107,7 @@ export function PendingInvitations() {
                   variant="ghost"
                   size="sm"
                   className="gap-1.5 text-muted-foreground hover:text-destructive"
-                  onClick={() => handleCancel(invitation.id)}
+                  onClick={() => cancelInvitation(invitation.id)}
                 >
                   <X className="size-3.5" />
                   <span className="hidden sm:inline">Cancel</span>

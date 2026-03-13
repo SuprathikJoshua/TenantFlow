@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMembers } from "@/hooks/use-team";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,82 +28,12 @@ import {
   Crown,
 } from "lucide-react";
 
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  role: "Owner" | "Admin" | "Member";
-  initials: string;
-  joinedDate: string;
-}
-
-const initialMembers: Member[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@acmecorp.com",
-    role: "Owner",
-    initials: "JD",
-    joinedDate: "Jan 15, 2025",
-  },
-  {
-    id: "2",
-    name: "Sarah Chen",
-    email: "sarah@acmecorp.com",
-    role: "Admin",
-    initials: "SC",
-    joinedDate: "Feb 3, 2025",
-  },
-  {
-    id: "3",
-    name: "Alex Rivera",
-    email: "alex@acmecorp.com",
-    role: "Member",
-    initials: "AR",
-    joinedDate: "Mar 12, 2025",
-  },
-  {
-    id: "4",
-    name: "Jordan Lee",
-    email: "jordan@acmecorp.com",
-    role: "Member",
-    initials: "JL",
-    joinedDate: "Apr 22, 2025",
-  },
-  {
-    id: "5",
-    name: "Morgan Kim",
-    email: "morgan@acmecorp.com",
-    role: "Admin",
-    initials: "MK",
-    joinedDate: "May 8, 2025",
-  },
-  {
-    id: "6",
-    name: "Taylor Brooks",
-    email: "taylor@acmecorp.com",
-    role: "Member",
-    initials: "TB",
-    joinedDate: "Jun 1, 2025",
-  },
-  {
-    id: "7",
-    name: "Casey Nguyen",
-    email: "casey@acmecorp.com",
-    role: "Member",
-    initials: "CN",
-    joinedDate: "Jul 19, 2025",
-  },
-];
-
 function getRoleBadgeClass(role: string) {
   switch (role) {
-    case "Owner":
+    case "OWNER":
       return "bg-primary/15 text-primary border-primary/20";
-    case "Admin":
+    case "ADMIN":
       return "bg-chart-4/15 text-chart-4 border-chart-4/20";
-    case "Member":
-      return "bg-secondary text-secondary-foreground border-border";
     default:
       return "bg-secondary text-secondary-foreground border-border";
   }
@@ -111,9 +41,9 @@ function getRoleBadgeClass(role: string) {
 
 function getRoleIcon(role: string) {
   switch (role) {
-    case "Owner":
+    case "OWNER":
       return <Crown className="size-3" />;
-    case "Admin":
+    case "ADMIN":
       return <ShieldCheck className="size-3" />;
     default:
       return null;
@@ -121,16 +51,14 @@ function getRoleIcon(role: string) {
 }
 
 export function MembersTable() {
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const { data: members, isLoading } = useMembers();
 
-  function handleRemove(id: string) {
-    setMembers((prev) => prev.filter((m) => m.id !== id));
+  if (isLoading) {
+    return <p className="text-muted-foreground text-sm">Loading members...</p>;
   }
 
-  function handleChangeRole(id: string, newRole: "Admin" | "Member") {
-    setMembers((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, role: newRole } : m)),
-    );
+  if (!members || members.length === 0) {
+    return <p className="text-muted-foreground text-sm">No members found.</p>;
   }
 
   return (
@@ -151,21 +79,21 @@ export function MembersTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {members.map((member) => (
+          {members.map((member: any) => (
             <TableRow key={member.id} className="border-border">
               <TableCell className="pl-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="size-9">
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                      {member.initials}
+                      {member.user.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-foreground">
-                      {member.name}
+                      {member.user.name}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {member.email}
+                      {member.user.email}
                     </span>
                     <div className="mt-1 sm:hidden">
                       <Badge
@@ -189,17 +117,16 @@ export function MembersTable() {
                 </Badge>
               </TableCell>
               <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
-                {member.joinedDate}
+                {new Date(member.joinedAt).toLocaleDateString()}
               </TableCell>
               <TableCell className="text-right pr-4">
-                {member.role !== "Owner" ? (
+                {member.role !== "OWNER" ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-8 text-muted-foreground hover:text-foreground"
-                        aria-label={`Actions for ${member.name}`}
                       >
                         <MoreHorizontal className="size-4" />
                       </Button>
@@ -207,28 +134,19 @@ export function MembersTable() {
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuLabel>Manage Member</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      {member.role === "Admin" ? (
-                        <DropdownMenuItem
-                          className="gap-3"
-                          onClick={() => handleChangeRole(member.id, "Member")}
-                        >
+                      {member.role === "ADMIN" ? (
+                        <DropdownMenuItem className="gap-3">
                           <UserCog className="size-4" />
                           Change to Member
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem
-                          className="gap-3"
-                          onClick={() => handleChangeRole(member.id, "Admin")}
-                        >
+                        <DropdownMenuItem className="gap-3">
                           <ShieldCheck className="size-4" />
                           Change to Admin
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="gap-3 text-destructive focus:text-destructive"
-                        onClick={() => handleRemove(member.id)}
-                      >
+                      <DropdownMenuItem className="gap-3 text-destructive focus:text-destructive">
                         <UserMinus className="size-4" />
                         Remove from team
                       </DropdownMenuItem>

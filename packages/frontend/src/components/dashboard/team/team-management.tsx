@@ -5,8 +5,11 @@ import { PendingInvitations } from "@/components/dashboard/team/pending-invitati
 import { InviteDialog } from "@/components/dashboard/team/invite-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Users, Mail } from "lucide-react";
+import { useInvitations, useMembers } from "@/hooks/use-team";
 
 export function TeamManagement() {
+  const { data: members } = useMembers();
+  const { data: invitations } = useInvitations();
   return (
     <div className="flex flex-col gap-8">
       {/* Page header */}
@@ -30,7 +33,7 @@ export function TeamManagement() {
           <Users className="size-4 text-muted-foreground" aria-hidden="true" />
           <h2 className="text-base font-semibold text-foreground">Members</h2>
           <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
-            7
+            {members?.length || 0}
           </span>
         </div>
         <MembersTable />
@@ -44,7 +47,7 @@ export function TeamManagement() {
             Pending Invitations
           </h2>
           <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
-            3
+            {invitations?.length || 0}
           </span>
         </div>
         <PendingInvitations />

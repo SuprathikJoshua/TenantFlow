@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSendInvitation } from "@/hooks/use-team";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,18 +27,20 @@ export function InviteDialog() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: sendInvitation, isPending } = useSendInvitation();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setIsSubmitting(true);
-    // Simulated submit
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setEmail("");
-      setRole("");
-      setOpen(false);
-    }, 1000);
+    sendInvitation(
+      { email, role },
+      {
+        onSuccess: () => {
+          setEmail("");
+          setRole("");
+          setOpen(false);
+        },
+      },
+    );
   }
 
   return (
@@ -71,7 +74,7 @@ export function InviteDialog() {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="invite-role">Role</Label>
-            <Select value={role} onValueChange={setRole} required>
+            <Select value={role} onValueChange={setRole}>
               <SelectTrigger
                 id="invite-role"
                 className="w-full bg-secondary/50"
@@ -79,14 +82,13 @@ export function InviteDialog() {
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
+                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value="MEMBER">Member</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Admins can manage members and settings. Members can access all
-              resources. Viewers have read-only access.
+              resources.
             </p>
           </div>
           <DialogFooter>
@@ -94,12 +96,12 @@ export function InviteDialog() {
               type="button"
               variant="ghost"
               onClick={() => setOpen(false)}
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !email || !role}>
-              {isSubmitting ? (
+            <Button type="submit" disabled={isPending || !email || !role}>
+              {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
                   Sending...
