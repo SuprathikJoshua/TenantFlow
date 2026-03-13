@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(pathname);
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+    const response = await fetch(new URL("/api/v1/auth/me", request.url), {
       headers: {
         cookie: request.headers.get("cookie") || "",
       },
