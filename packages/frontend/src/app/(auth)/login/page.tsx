@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Sign in to your TenantFlow account to manage your teams.",
 };
 
-function LoginPage() {
+export default function LoginPage() {
   return (
     <main className="flex min-h-svh">
       {/* Left - Branding Panel */}
