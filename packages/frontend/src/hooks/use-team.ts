@@ -9,7 +9,7 @@ export function useMembers() {
     queryKey: ["members", currentOrgId],
     queryFn: async () => {
       const res = await organizationApi.getMembers(currentOrgId!);
-      return res.data.data.members;
+      return res.data.data;
     },
     enabled: !!currentOrgId,
   });

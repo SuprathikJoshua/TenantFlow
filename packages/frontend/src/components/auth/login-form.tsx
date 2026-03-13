@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,12 +15,12 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
-    const searchParams = useSearchParams();
 
     try {
       await apiClient.post("/auth/login", {

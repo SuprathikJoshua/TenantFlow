@@ -21,9 +21,9 @@ export const getAllOrgMembersService = async (orgId: string) => {
     },
   });
 
-  if (!members || members.length === 0) {
-    throw new ApiError(404, "No members found for this organization");
-  }
+  // if (!members || members.length === 0) {
+  //   throw new ApiError(404, "No members found for this organization");
+  // }
 
   return members;
 };

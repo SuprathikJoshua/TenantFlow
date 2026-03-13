@@ -9,6 +9,8 @@ import { useInvitations, useMembers } from "@/hooks/use-team";
 
 export function TeamManagement() {
   const { data: members } = useMembers();
+  // console.log(members);
+
   const { data: invitations } = useInvitations();
   return (
     <div className="flex flex-col gap-8">
