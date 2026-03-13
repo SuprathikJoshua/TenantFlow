@@ -1,4 +1,3 @@
-import { log } from "console";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -67,7 +66,7 @@ export const sendInvitationEmail = async (
   token: string,
   orgName: string,
 ) => {
-  const inviteUrl = `${process.env.APP_URL}/invitations?token=${token}`;
+  const inviteUrl = `${process.env.FRONTEND_URL}/invite?token=${token}`;
 
   await resend.emails.send({
     from: "TenantFlow <onboarding@resend.dev>",

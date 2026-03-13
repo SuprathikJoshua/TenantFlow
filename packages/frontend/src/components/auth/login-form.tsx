@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +21,7 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
+    const searchParams = useSearchParams();
 
     try {
       await apiClient.post("/auth/login", {
@@ -27,7 +29,8 @@ export function LoginForm() {
         password: formData.get("password"),
       });
 
-      router.push("/dashboard");
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
     } catch (error: any) {
       setError(error?.response?.data?.message || "Login failed");
     } finally {

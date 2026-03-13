@@ -83,6 +83,8 @@ export const acceptInvitationService = async (
     where: { token },
   });
 
+  // console.log(invitation);
+
   if (!invitation) {
     throw new ApiError(404, "Invitation not found.");
   }
@@ -122,33 +124,39 @@ export const acceptInvitationService = async (
 /**
  * Cancel pending invitation Service
  */
-export const cancelInvitationService = async (
-  invitationId: string,
+export const declineInvitationService = async (
+  token: string,
   userId: string,
 ) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-
-  const invitation = await prisma.invitation.findUnique({
-    where: { id: invitationId },
+  const invitation = await prisma.invitation.findFirst({
+    where: { token },
   });
 
   if (!invitation) {
     throw new ApiError(404, "Invitation not found.");
   }
   if (invitation.status !== "PENDING") {
-    throw new ApiError(400, "Only pending invitations can be cancelled.");
+    throw new ApiError(400, "Invitation is no longer valid.");
   }
+  if (invitation.expiresAt < new Date()) {
+    throw new ApiError(400, "Invitation has expired.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
   if (invitation.email !== user?.email) {
     throw new ApiError(
       403,
-      "You are not authorized to cancel this invitation.",
+      "You are not authorized to decline this invitation.",
     );
   }
+
   await prisma.invitation.update({
-    where: { id: invitationId },
+    where: { id: invitation.id },
     data: { status: "DECLINED" },
   });
+
   return true;
 };

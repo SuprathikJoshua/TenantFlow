@@ -21,7 +21,7 @@ export function useInvitations() {
     queryKey: ["invitations", currentOrgId],
     queryFn: async () => {
       const res = await invitationApi.getAll(currentOrgId!);
-      return res.data.data.invitations;
+      return res.data.data; // ← remove .invitations
     },
     enabled: !!currentOrgId,
   });

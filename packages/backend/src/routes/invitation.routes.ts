@@ -9,9 +9,12 @@ import { Router } from "express";
 
 const router = Router();
 
+// Static Routes
+router.patch("/accept", verifyJWT, acceptInvitation);
+router.patch("/decline", verifyJWT, declineInvitation);
+
+//Dynmic Routes
 router.post("/:orgId/send-invitation", verifyJWT, sendingInvitation);
 router.get("/:orgId/invitations", verifyJWT, getInvitations);
-router.post("/accept", verifyJWT, acceptInvitation);
-router.post("/decline/:invitationId", verifyJWT, declineInvitation);
 
 export default router;

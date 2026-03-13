@@ -1,6 +1,6 @@
 import {
   acceptInvitationService,
-  cancelInvitationService,
+  declineInvitationService,
   getAllInvitationsService,
   sendingInvitationService,
 } from "@/services/invitation.service";
@@ -71,9 +71,9 @@ export const acceptInvitation = asyncHandler(
  */
 export const declineInvitation = asyncHandler(
   async (req: Request, res: Response) => {
-    const { invitationId } = req.params;
+    const { token } = req.query;
     const userId = req.userId as string;
-    await cancelInvitationService(invitationId as string, userId);
+    await declineInvitationService(token as string, userId);
     res.status(200).json(new ApiResponse(200, null, "Invitation declined."));
   },
 );
