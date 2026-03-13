@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthBranding } from "@/components/auth/auth-branding";
 import { LoginForm } from "@/components/auth/login-form";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Sign In - TenantFlow",
@@ -39,8 +40,9 @@ export default function LoginPage() {
             TenantFlow
           </span>
         </div>
-
-        <LoginForm />
+        <Suspense fallback={<div className="flex-1" />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </main>
   );
