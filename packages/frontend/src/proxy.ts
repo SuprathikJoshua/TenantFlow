@@ -1,20 +1,35 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicRoutes = ["/", "/login", "/register", "/invite"];
+const publicRoutes = ["/", "/login", "/register", "/invite", "/decline"];
 
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (!token && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
 
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const isAuthenticated = response.ok;
+
+    if (!isAuthenticated && !isPublicRoute) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (
+      isAuthenticated &&
+      (pathname === "/login" || pathname === "/register")
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  } catch {
+    if (!isPublicRoute) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   return NextResponse.next();
