@@ -1,6 +1,11 @@
 "use client";
 
-import { useInvitations, useCancelInvitation } from "@/hooks/use-team";
+import {
+  useInvitations,
+  useCancelInvitation,
+  useMembers,
+} from "@/hooks/use-team";
+import { useUser } from "@/hooks/use-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +30,12 @@ function getRoleBadgeClass(role: string) {
 export function PendingInvitations() {
   const { data: invitations, isLoading } = useInvitations();
   const { mutate: cancelInvitation } = useCancelInvitation();
+  const { data: members } = useMembers();
+  const { data: user } = useUser();
+
+  const currentMember = members?.find((m: any) => m.user.id === user?.id);
+  const canCancel =
+    currentMember?.role === "OWNER" || currentMember?.role === "ADMIN";
 
   if (isLoading) {
     return (
@@ -60,9 +71,11 @@ export function PendingInvitations() {
             <TableHead className="text-muted-foreground hidden md:table-cell">
               Sent
             </TableHead>
-            <TableHead className="text-muted-foreground text-right pr-4">
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            {canCancel && (
+              <TableHead className="text-muted-foreground text-right pr-4">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -102,17 +115,19 @@ export function PendingInvitations() {
                   {new Date(invitation.createdAt).toLocaleDateString()}
                 </div>
               </TableCell>
-              <TableCell className="text-right pr-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-muted-foreground hover:text-destructive"
-                  onClick={() => cancelInvitation(invitation.id)}
-                >
-                  <X className="size-3.5" />
-                  <span className="hidden sm:inline">Cancel</span>
-                </Button>
-              </TableCell>
+              {canCancel && (
+                <TableCell className="text-right pr-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-muted-foreground hover:text-destructive"
+                    onClick={() => cancelInvitation(invitation.id)}
+                  >
+                    <X className="size-3.5" />
+                    <span className="hidden sm:inline">Cancel</span>
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
