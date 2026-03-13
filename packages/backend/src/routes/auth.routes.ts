@@ -2,6 +2,7 @@ import {
   forgotPassword,
   getMe,
   loginUser,
+  logoutUser,
   registerUser,
   resetPassword,
   verifyEmail,
@@ -13,7 +14,7 @@ const router = Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-// router.post("/logout");
+router.post("/logout", logoutUser);
 router.get("/verify-email", verifyEmail);
 router.post("/reset-password", resetPassword);
 router.post("/forgot-password", forgotPassword);

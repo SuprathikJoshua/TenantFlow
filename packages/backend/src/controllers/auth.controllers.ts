@@ -111,3 +111,14 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, { user }, "User fetched successfully"));
 });
+
+/**
+ * Logout User Controller
+ */
+export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "User logged out successfully"));
+});
