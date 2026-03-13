@@ -11,7 +11,7 @@ import { log } from "console";
  */
 export const getAllInvitationsService = async (orgId: string) => {
   const invitations = await prisma.invitation.findMany({
-    where: { organizationId: orgId },
+    where: { organizationId: orgId, status: "PENDING" },
     orderBy: { createdAt: "desc" },
   });
   // console.log(invitations);
