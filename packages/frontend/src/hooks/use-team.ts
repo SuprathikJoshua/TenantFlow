@@ -24,6 +24,8 @@ export function useInvitations() {
       return res.data.data; // ← remove .invitations
     },
     enabled: !!currentOrgId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
 
